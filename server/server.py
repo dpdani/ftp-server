@@ -2,11 +2,12 @@
 
 
 import os
-import imp
+import importlib.machinery as imp
 import threading
 import argparse
 
-fullsocket = imp.load_source('fullsocket', os.path.join('..', 'common', 'fullsocket.py'))
+fullsocket = imp.SourceFileLoader('fullsocket', os.path.join('..', 'common',
+                                  'fullsocket.py')).load_module()
 
 
 def retr_file(name, sock):
@@ -16,7 +17,7 @@ def retr_file(name, sock):
         try:
             userResponse = sock.recv()
         except RuntimeError:
-            print 'Client closed connection.'
+            print('Client closed connection.')
             sock.close()
             return
         if userResponse[:2] =='OK':
@@ -24,16 +25,16 @@ def retr_file(name, sock):
                 while True:
                     bytesToSend = f.read(1024)
                     if bytesToSend == '':
-                        break;
+                        break
                     try:
                         sock.send(bytesToSend)
                     except RuntimeError:
-                        print 'Client closed connection.'
+                        print('Client closed connection.')
     else:
         try:
             sock.send('ERR')
         except RuntimeError:
-            print 'Client closed connection.'
+            print('Client closed connection.')
     sock.close()
 
 
@@ -46,15 +47,15 @@ def main(args):
 
     s.listen(5)
 
-    print 'Server started.'
+    print('Server started.')
 
     while True:
         conn, addr = s.accept()
         c = fullsocket.FullSocket(conn)
-        print 'client connected ip:<' + str(addr) + '>'
+        print('client connected ip:<' + str(addr) + '>')
         t = threading.Thread(target=retr_file, args=('retrThread',c))
         t.start()
-    c.close()
+    s.close()
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
