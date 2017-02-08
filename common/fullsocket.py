@@ -54,6 +54,8 @@ class FullSocket:
         return ''.join(chunks)
 
     def send(self, msg):
+        if PY3:
+            msg = bytes(msg, encoding='utf-8')
         size = len(msg)               # send msg length as unsigned integer
         nsize = socket.htonl(size)    #
         nstr = struct.pack('I',nsize)

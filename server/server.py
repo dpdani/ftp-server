@@ -10,32 +10,46 @@ fullsocket = imp.SourceFileLoader('fullsocket', os.path.join('..', 'common',
                                   'fullsocket.py')).load_module()
 
 
-def retr_file(name, sock):
-    filename = sock.recv()
-    if os.path.isfile(filename):
-        sock.send('EXISTS ' + str(os.path.getsize(filename)))
-        try:
-            userResponse = sock.recv()
-        except RuntimeError:
-            print('Client closed connection.')
-            sock.close()
-            return
-        if userResponse[:2] =='OK':
-            with open(filename, 'rb') as f:
-                while True:
-                    bytesToSend = f.read(1024)
-                    if bytesToSend == '':
-                        break
-                    try:
-                        sock.send(bytesToSend)
-                    except RuntimeError:
-                        print('Client closed connection.')
+def retr_file(address, sock):
+    method = sock.recv().strip()
+    print(address, method)
+    if method == 'INFO':
+        sock.send('OK\n')
+    elif method == 'LIST':
+        to_send = ['OK']
+        for name in os.listdir(os.getcwd()):
+            to_send.append(name)
+        to_send.append('END')
+        sock.send('\n'.join(to_send))
+    elif method == 'GET':
+        sock.send('OK\n')
+        filename = sock.recv()
+        if os.path.isfile(filename):
+            sock.send('EXISTS ' + str(os.path.getsize(filename)))
+            try:
+                userResponse = sock.recv()
+            except RuntimeError:
+                print('Client closed connection.')
+                sock.close()
+                return
+            if userResponse[:2] == 'OK':
+                with open(filename, 'rb') as f:
+                    while True:
+                        bytesToSend = f.read(1024)
+                        if bytesToSend == '':
+                            break
+                        try:
+                            sock.send(bytesToSend)
+                        except RuntimeError:
+                            print('Client closed connection.')
+        else:
+            try:
+                sock.send('ERR')
+            except RuntimeError:
+                print('Client closed connection.')
+        sock.close()
     else:
-        try:
-            sock.send('ERR')
-        except RuntimeError:
-            print('Client closed connection.')
-    sock.close()
+        sock.send('ERROR\n')
 
 
 def main(args):
@@ -43,6 +57,7 @@ def main(args):
     port = 1234
 
     s = fullsocket.FullSocket()
+    s.setsockopt(fullsocket.socket.SOL_SOCKET, fullsocket.socket.SO_REUSEADDR, 1)
     s.bind((host, port))
 
     s.listen(5)
@@ -53,7 +68,7 @@ def main(args):
         conn, addr = s.accept()
         c = fullsocket.FullSocket(conn)
         print('client connected ip:<' + str(addr) + '>')
-        t = threading.Thread(target=retr_file, args=('retrThread',c))
+        t = threading.Thread(target=retr_file, args=(addr,c))
         t.start()
     s.close()
 

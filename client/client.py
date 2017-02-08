@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
 import os
+import threading
 import importlib.machinery as imp
-import urwid
 import argparse
+import urwid
+import views
 
 
 fullsocket = imp.SourceFileLoader('fullsocket', os.path.join('..', 'common',
@@ -12,21 +14,43 @@ fullsocket = imp.SourceFileLoader('fullsocket', os.path.join('..', 'common',
 
 class GUI:
     palette = [
-        # ...
+        ('body', 'default', 'default'),
+        ('header', 'dark blue,bold', 'default'),
+        ('header buttons', 'dark blue', 'default'),
+        ('footer', 'yellow', 'default'),
+        ('error', 'dark red', 'default'),
+        ('success', 'dark green', 'default'),
+        ('waiting', 'yellow', 'default'),
+        ('navigation', 'dark gray,underline', 'default'),
+        ('mainview_title', 'default,bold', 'default'),
+        ('reveal focus', 'default,standout', 'default'),
+        ('dialog background', 'default', 'dark gray'),
+        ('dialog button', 'default', 'dark gray'),
+        ('dialog button focused', 'default', 'light blue'),
+        ('edit', 'default,underline', 'default')
     ]
 
-    top = None
+    top = views.MainFrame()
 
     def __init__(self, args):
-        pass
+        self.top = views.MainFrame()
+        welcome_view = views.WelcomeView(self.top)
+        welcome_view.app_quit = self.app_quit
+        self.top.set_body(welcome_view)
 
     def main(self):
         self.loop = urwid.MainLoop(self.top, palette=self.palette,
                                    unhandled_input=self.unhandled_input)
+        views.set_ui(self.loop.screen)
+        self.loop.run()
 
     def unhandled_input(self, key):
         if key in ('q', 'Q', 'esc'):
-            raise urwid.ExitMainLoop()
+            self.app_quit()
+
+    def app_quit(self):
+        views.stop_evt.set()
+        raise urwid.ExitMainLoop()
 
 
 def simple_main():
@@ -36,6 +60,8 @@ def simple_main():
     sock.connect((host, port))
     filename = input('Filename? -> ')
     if filename != 'q':
+        sock.send('GET')
+        sock.recv()  # OK
         sock.send(filename)
         data = sock.recv()
         if data[:6] == 'EXISTS':
