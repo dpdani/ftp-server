@@ -42,15 +42,19 @@ class GUI:
         self.loop = urwid.MainLoop(self.top, palette=self.palette,
                                    unhandled_input=self.unhandled_input)
         views.set_ui(self.loop.screen)
-        self.loop.run()
+        try:
+            self.loop.run()
+        except KeyboardInterrupt:
+            self.app_quit(raise_urwid=False)
 
     def unhandled_input(self, key):
         if key in ('q', 'Q', 'esc'):
             self.app_quit()
 
-    def app_quit(self):
+    def app_quit(self, raise_urwid=True):
         views.stop_evt.set()
-        raise urwid.ExitMainLoop()
+        if raise_urwid:
+            raise urwid.ExitMainLoop()
 
 
 def simple_main():

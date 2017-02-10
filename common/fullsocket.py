@@ -5,6 +5,7 @@ __authors__ = ('paolo', 'Daniele Parmeggiani <dani.parmeggiani@gmail.com>')
 import socket
 import struct
 import sys
+import chardet
 
 assert sys.version_info >= (2,5)  # needed for bytes objects
 PY3 = sys.version_info >= (3,0)
@@ -30,13 +31,17 @@ class FullSocket:
             if chunk == b'':
                 raise RuntimeError("socket connection broken")
             if PY3:
-                chunks.append(chunk.decode())
+                chunks.append(chunk.decode(chardet.detect(chunk)['encoding']))
             else:
                 chunks.append(chunk)
             bytes_recd = bytes_recd + len(chunk)
         nstr  = ''.join(chunks)
+        with open('asdf', 'w') as f:
+            f.write(str(type(nstr.encode())))
+            f.write('\n')
+            f.write(str(len(nstr.encode())))
         if PY3:
-            nsize = struct.unpack('I', nstr.encode())
+            nsize = struct.unpack('I', nstr.encode()[:4])
         else:
             nsize = struct.unpack('I', nstr)
         size  = socket.ntohl(nsize[0])
@@ -54,8 +59,8 @@ class FullSocket:
         return ''.join(chunks)
 
     def send(self, msg):
-        if PY3:
-            msg = bytes(msg, encoding='utf-8')
+        if PY3 and type(msg) != bytes:
+            msg = msg.encode()
         size = len(msg)               # send msg length as unsigned integer
         nsize = socket.htonl(size)    #
         nstr = struct.pack('I',nsize)

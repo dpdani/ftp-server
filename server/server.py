@@ -2,12 +2,12 @@
 
 
 import os
-import importlib.machinery as imp
+import imp
 import threading
 import argparse
 
-fullsocket = imp.SourceFileLoader('fullsocket', os.path.join('..', 'common',
-                                  'fullsocket.py')).load_module()
+fullsocket = imp.load_source('fullsocket', os.path.join('..', 'common',
+                             'fullsocket.py'))
 
 
 def retr_file(address, sock):
@@ -33,6 +33,7 @@ def retr_file(address, sock):
                 sock.close()
                 return
             if userResponse[:2] == 'OK':
+                print(address, 'sending \'{}\'...'.format(filename))
                 with open(filename, 'rb') as f:
                     while True:
                         bytesToSend = f.read(1024)
@@ -40,8 +41,8 @@ def retr_file(address, sock):
                             break
                         try:
                             sock.send(bytesToSend)
-                        except RuntimeError:
-                            print('Client closed connection.')
+                        except (RuntimeError, fullsocket.socket.ConnectionResetError):
+                            print(address, 'closed connection.')
         else:
             try:
                 sock.send('ERR')

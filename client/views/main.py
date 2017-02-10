@@ -86,13 +86,16 @@ class MainView(urwid.WidgetWrap):
             return
         else:
             length = int(status.split(' ')[1])
-        sure = common.YesNoDialog('File is {} bytes. Do you want to proceed?',
+        sure = common.YesNoDialog('File is {} bytes. Do you want to proceed?'.format(length),
             attr='default', width=40, height=10, body=self.frame)
         if sure.listen():
             self.sock.send('OK')
-        f = open(filename, 'wb')
-        total_recv = 0
-        while total_recv < length:
-            data = self.sock.recv()
-            total_recv += len(data)
-            f.write(data)
+            f = open(filename, 'wb')
+            total_recv = 0
+            while total_recv < length:
+                data = self.sock.recv()
+                total_recv += len(data)
+                f.write(bytes(data, 'utf-8'))
+        else:
+            self.sock.close()
+
