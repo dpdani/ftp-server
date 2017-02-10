@@ -41,8 +41,9 @@ def retr_file(address, sock):
                             break
                         try:
                             sock.send(bytesToSend)
-                        except (RuntimeError, fullsocket.socket.ConnectionResetError):
+                        except (RuntimeError, fullsocket.socket.error):
                             print(address, 'closed connection.')
+                            break
         else:
             try:
                 sock.send('ERR')

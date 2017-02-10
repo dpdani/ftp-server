@@ -26,7 +26,7 @@ class MainFrame(urwid.Frame):
             urwid.AttrWrap(urwid.Text("[esc|q: Exit]", 'left'), 'header buttons'),
             urwid.AttrWrap(urwid.Text("[w: Back]", 'center'), 'header buttons'),
             urwid.AttrWrap(urwid.Text("[e: Next]", 'center'), 'header buttons'),
-            urwid.AttrWrap(urwid.Text("[F5|r: Refresh]", 'center'), 'header buttons'),
+            urwid.AttrWrap(urwid.Text("[F5|r: Refresh]", 'right'), 'header buttons'),
         ])
         self.header = urwid.Pile([
             urwid.Columns([
@@ -49,7 +49,7 @@ class MainFrame(urwid.Frame):
             header=self.header,
             footer=self.footer,
         )
-        # threading.Thread(target=self.keep_time_updated).start()
+        threading.Thread(target=self.keep_time_updated).start()
 
     def keep_time_updated(self):
         while not stop_evt.is_set():
@@ -87,3 +87,4 @@ class MainFrame(urwid.Frame):
     def refresh(self):
         self.body_history[self.current_view].refresh()
         self.body._invalidate()
+

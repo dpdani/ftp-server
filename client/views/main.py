@@ -96,6 +96,10 @@ class MainView(urwid.WidgetWrap):
                 data = self.sock.recv()
                 total_recv += len(data)
                 f.write(bytes(data, 'utf-8'))
+            self.sock.close()
+            ok = common.OkDialog('File \'{}\' downloaded successfully.'.format(filename),
+                attr='default', width=40, height=10, body=self.frame)
+            ok.listen()
         else:
             self.sock.close()
 
