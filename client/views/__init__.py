@@ -24,9 +24,9 @@ class MainFrame(urwid.Frame):
         self.header_time = urwid.AttrWrap(self.header_time, 'header')
         self.commands = urwid.Columns([
             urwid.AttrWrap(urwid.Text("[esc|q: Exit]", 'left'), 'header buttons'),
-            urwid.AttrWrap(urwid.Text("[w: Back]", 'center'), 'header buttons'),
-            urwid.AttrWrap(urwid.Text("[e: Next]", 'center'), 'header buttons'),
-            urwid.AttrWrap(urwid.Text("[F5|r: Refresh]", 'right'), 'header buttons'),
+            # urwid.AttrWrap(urwid.Text("[w: Back]", 'center'), 'header buttons'),
+            # urwid.AttrWrap(urwid.Text("[e: Next]", 'center'), 'header buttons'),
+            # urwid.AttrWrap(urwid.Text("[F5|r: Refresh]", 'right'), 'header buttons'),
         ])
         self.header = urwid.Pile([
             urwid.Columns([
